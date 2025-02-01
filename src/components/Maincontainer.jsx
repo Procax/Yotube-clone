@@ -4,7 +4,7 @@ import VideoContainer from './VideoContainer'
 
 const Maincontainer = () => {
   return (
-    <div className='col-span-10'>
+    <div className='col-span-10 overflow-hidden'>
       <ButtonList/>
         <VideoContainer/>
       

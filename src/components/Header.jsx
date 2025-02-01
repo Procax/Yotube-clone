@@ -3,48 +3,65 @@ import { useDispatch, useSelector } from 'react-redux'
 import { toggleMenu } from '../utils/appSlice';
 import { YOUTUBE_SEARCH_API } from '../utils/constant';
 import { cacheResults } from '../utils/searchSlice';
+import { useTheme } from '../utils/ThemeContext';
 
 const Header = () => {
 
   const [searchQuery, setsearchQuery] = useState("");
-  const [suggestions, setsuggestions] = useState('')
+  const [suggestions, setsuggestions] = useState(null)
   const [showSuggestions, setShowSuggestions] = useState(false);
 
+  const { theme, toggleTheme } = useTheme();
+
+  
 
   const searchCache = useSelector((store) => store.search)
 
+
   useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery.trim() === "") {
+        setsuggestions(null);
+        setShowSuggestions(false); // Hide suggestions when searchQuery is empty
+        return;
+      }
+  
+      if (searchCache[searchQuery]) {
+        setsuggestions(searchCache[searchQuery]);
+        setShowSuggestions(true); // Show suggestions when cache exists
+      } else {
+        getSearchSuggestions();
+      }
+    }, 200);
+  
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
-   const timer = setTimeout(() => { 
-
-    if (searchCache[searchQuery]) {
-      setsuggestions(searchQuery[searchQuery])
-    } else {
-      getSearchSuggestions()
-    }
-
-
-    }, 200)
-
-    return () => {
-      clearTimeout(timer)
-    }
-
-  }, [searchQuery])
+  
 
   const getSearchSuggestions = async () => {
-    // console.log(searchQuery)
-    const data = await fetch(YOUTUBE_SEARCH_API + searchQuery)
-    const json = await data.json();
-    // console.log(json[1])
-    setsuggestions(json[1])
-
-    dispatch (
-      cacheResults({
-        [searchQuery]: json[1],
-      })
-    )
-  }
+    try {
+      const data = await fetch(YOUTUBE_SEARCH_API + searchQuery);
+      const json = await data.json();
+  
+      const newSuggestions = json.items?.map((a) => a.snippet.title);
+      setsuggestions(newSuggestions);
+      
+      if (newSuggestions.length > 0) {
+        setShowSuggestions(true); // Ensure suggestions are shown when available
+      } else {
+        setShowSuggestions(false); // Hide if no results
+      }
+  
+      dispatch(
+        cacheResults({
+          [searchQuery]: newSuggestions,
+        })
+      );
+    } catch (error) {
+      console.error("Error fetching suggestions:", error);
+    }
+  };
 
   const dispatch = useDispatch();
 
@@ -79,34 +96,31 @@ const Header = () => {
     </div>
 
     {/* Dropdown */}
-    <div className="absolute bg-white py-2 px-2 w-[33rem] top-12 shadow-lg rounded-lg border border-gray-100">
-      <ul>
-        {/* {console.log(sug)} */}
-        {/* {showSuggestions &&
-          suggestions?.map((s) => (
-            <li>{s}</li>
-          ))
+    {showSuggestions && suggestions?.length > 0 && (
+  <div className="absolute bg-white py-2 px-2 w-[33rem] top-12 shadow-lg rounded-lg border border-gray-100">
+    <ul>
+      {suggestions.slice(0, 14)?.map((s) => (
+        <li key={s}>{s}</li>
+      ))}
+    </ul>
+  </div>
+)}
 
-        } */}
 
-{suggestions &&
-suggestions?.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        {/* <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li>
-        <li>Iphone pro</li> */}
-      </ul>
-    </div>
   </div>
 </div>
 
 
+      <button
+        onClick={toggleTheme}
+        className="px-6 py-2"
+      >
+        <img src={theme === 'dark'  
+                ? 'https://img.icons8.com/?size=100&id=88015&format=png&color=000000' 
+                : 'https://img.icons8.com/?size=100&id=97849&format=png&color=000000'}
+          alt="Theme Icon" 
+          className="w-8 h-8" />
+      </button>
         <div>
             <img className='h-8' src="https://icons.veryicon.com/png/o/miscellaneous/indata/user-circle-1.png" alt="User-Logo" />
         </div>

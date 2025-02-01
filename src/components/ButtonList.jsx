@@ -14,6 +14,18 @@ const ButtonList = () => {
       <Button name='Live' />
       <Button name='Cooking' />
       <Button name='javascript' />
+      <Button name='News' />
+      <Button name='AI' />
+      <Button name='Manga' />
+      <Button name='Podcast' />
+      <Button name='Namaste Javascript' />
+      <Button name='React' />
+      <Button name='Football' />
+      <Button name='Naruto' />
+      <Button name='Dragon Ball z' />
+      <Button name='Anime' />
+      <Button name='Marvel' />
+
 
 
 
